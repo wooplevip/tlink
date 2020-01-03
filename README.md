@@ -60,12 +60,12 @@ tlink.sink.table.type=Append
 
 1. 支持基于event time的窗口
 2. 支持随机产生数据
+3. 支持指定文件的方式产生数据
 
 ## 后续计划
 
-1. 支持指定文件的方式产生数据
-2. 支持多流join的sql
-3. 支持blink
+1. 支持多流join的sql
+2. 支持blink planer
 
 ## 参数说明
 
