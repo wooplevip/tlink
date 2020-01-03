@@ -36,16 +36,31 @@ public class MemoryDataSource extends RichParallelSourceFunction<Row> {
                         PropertiesUtil.getLong(this.tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_INTERVAL_RANDOM_FACTOR, 1000L));
             }
 
-
             Row row = new Row(fieldNames.length);
+            int eventTimeIndex = PropertiesUtil.getInt(tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_TABLE_EVENTTIME_INDEX, -1);
 
             for (int i = 0; i < fieldNames.length; i++) {
                 switch (fieldTypes[i].toString()) {
-                    case "Long":
-                        row.setField(i, RandomUtils.nextLong(PropertiesUtil.getLong(this.tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_LONG_RANDOM_STARTINCLUSIVE, 1),
-                                PropertiesUtil.getLong(this.tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_LONG_RANDOM_ENDEXCLUSIVE, 10)) *
-                                PropertiesUtil.getLong(this.tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_LONG_RANDOM_FACTOR, 1));
+                    case "Long": {
+                        if (eventTimeIndex == i) {
+                            long random = RandomUtils.nextLong(PropertiesUtil.getLong(this.tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_TIMESTAMP_RANDOM_STARTINCLUSIVE, 1),
+                                    PropertiesUtil.getLong(this.tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_TIMESTAMP_RANDOM_ENDEXCLUSIVE, 10)) *
+                                    PropertiesUtil.getLong(this.tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_TIMESTAMP_RANDOM_FACTOR, 1000L);
+                            long rowTime = 0;
+
+                            if (random % 2 == 0) {
+                                rowTime = System.currentTimeMillis() - random;
+                            } else {
+                                rowTime = System.currentTimeMillis() + random;
+                            }
+                            row.setField(i, rowTime);
+                        } else {
+                            row.setField(i, RandomUtils.nextLong(PropertiesUtil.getLong(this.tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_LONG_RANDOM_STARTINCLUSIVE, 1),
+                                    PropertiesUtil.getLong(this.tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_LONG_RANDOM_ENDEXCLUSIVE, 10)) *
+                                    PropertiesUtil.getLong(this.tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_LONG_RANDOM_FACTOR, 1));
+                        }
                         break;
+                    }
                     case "Integer":
                         row.setField(i, RandomUtils.nextInt(PropertiesUtil.getInt(this.tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_INT_RANDOM_STARTINCLUSIVE, 1),
                                 PropertiesUtil.getInt(this.tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_INT_RANDOM_ENDEXCLUSIVE, 10)) *
@@ -59,20 +74,20 @@ public class MemoryDataSource extends RichParallelSourceFunction<Row> {
                         row.setField(i, values[RandomUtils.nextInt(0, values.length)]);
                         break;
                     }
-                    case "Timestamp": {
-                        long random = RandomUtils.nextLong(PropertiesUtil.getLong(this.tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_TIMESTAMP_RANDOM_STARTINCLUSIVE, 1),
-                                PropertiesUtil.getLong(this.tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_TIMESTAMP_RANDOM_ENDEXCLUSIVE, 10)) *
-                                PropertiesUtil.getLong(this.tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_TIMESTAMP_RANDOM_FACTOR, 1000L);
-                        long rowTime = 0;
-
-                        if (random % 2 == 0) {
-                            rowTime = System.currentTimeMillis() - random;
-                        } else {
-                            rowTime = System.currentTimeMillis() + random;
-                        }
-                        row.setField(i, rowTime);
-                        break;
-                    }
+//                    case "Timestamp": {
+//                        long random = RandomUtils.nextLong(PropertiesUtil.getLong(this.tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_TIMESTAMP_RANDOM_STARTINCLUSIVE, 1),
+//                                PropertiesUtil.getLong(this.tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_TIMESTAMP_RANDOM_ENDEXCLUSIVE, 10)) *
+//                                PropertiesUtil.getLong(this.tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_TIMESTAMP_RANDOM_FACTOR, 1000L);
+//                        long rowTime = 0;
+//
+//                        if (random % 2 == 0) {
+//                            rowTime = System.currentTimeMillis() - random;
+//                        } else {
+//                            rowTime = System.currentTimeMillis() + random;
+//                        }
+//                        row.setField(i, rowTime);
+//                        break;
+//                    }
                     default:
                         throw new Exception("Only support field types {LONG, INT, STRING, SQL_TIMESTAMP}");
 

@@ -11,21 +11,21 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.java.StreamTableEnvironment;
 import org.apache.flink.table.sinks.TableSink;
 import org.apache.flink.types.Row;
 
-
 public class Launcher {
     public static void main(String[] args) throws Exception{
-        if (args.length == 0){
-            System.err.println("Can not find config file path!");
-            System.exit(101);
-        }
+//        if (args.length == 0){
+//            System.err.println("Can not find config file path!");
+//            System.exit(101);
+//        }
 
-        TlinkConfiguration tConfig = new TlinkConfiguration(args[0].trim());
+        String path = "/Users/peng/SandBox/Dev/MyBranch/tlink/conf/tlink-w.properties";
+
+        TlinkConfiguration tConfig = new TlinkConfiguration(path);
 
         String[] sourceFieldNames = PropertiesUtil.getStringArray(tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDNAMES, TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDNAMES_DEFAULT);
         TypeInformation<?>[] fieldTypes = tConfig.getSourceFieldTypes();
