@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%date{yyyyMMdd HH:mm:ss.SSS} %level [%t] %c{39}.%M:%line-%m%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="ERROR" additivity="false">
+        <appender-ref ref="STDOUT" />
+    </root>
+</configuration>
