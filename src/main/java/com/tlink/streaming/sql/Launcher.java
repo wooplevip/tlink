@@ -18,14 +18,12 @@ import org.apache.flink.types.Row;
 
 public class Launcher {
     public static void main(String[] args) throws Exception{
-//        if (args.length == 0){
-//            System.err.println("Can not find config file path!");
-//            System.exit(101);
-//        }
+        if (args.length == 0){
+            System.err.println("Can not find config file path!");
+            System.exit(101);
+        }
 
-        String path = "/Users/peng/SandBox/Dev/MyBranch/tlink/conf/tlink-w.properties";
-
-        TlinkConfiguration tConfig = new TlinkConfiguration(path);
+        TlinkConfiguration tConfig = new TlinkConfiguration(args[0].trim());
 
         String[] sourceFieldNames = PropertiesUtil.getStringArray(tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDNAMES, TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDNAMES_DEFAULT);
         TypeInformation<?>[] fieldTypes = tConfig.getSourceFieldTypes();
