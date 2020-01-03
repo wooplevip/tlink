@@ -2,11 +2,13 @@ package com.tlink.conf;
 
 import com.google.common.collect.ImmutableMap;
 import com.tlink.utils.PropertiesUtil;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.Serializable;
 import java.util.*;
@@ -41,8 +43,6 @@ public class TlinkConfiguration implements Serializable {
     public Properties getProperties() {
         return config;
     }
-
-
 
     public void validate() {
 
@@ -94,10 +94,4 @@ public class TlinkConfiguration implements Serializable {
             return this.supportedTimeCharacteristics.get(t) != TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_TIMECHARACTERISTIC_DEFAULT;
         }
     }
-
-    public static void main(String[] args) throws Exception {
-        TlinkConfiguration tlinkConfiguration = new TlinkConfiguration("/Users/peng/SandBox/Dev/MyBranch/tlink/src/main/resources/tlink.properties");
-        System.out.println(tlinkConfiguration.getProperties());
-    }
-
 }

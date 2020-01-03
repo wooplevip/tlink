@@ -16,6 +16,8 @@ public class TlinkConfigConstants {
     public static final String TLINK_SOURCE_PRODUCER_MODE = "tlink.source.producer.mode";//file or random
     public static final String TLINK_SOURCE_PRODUCER_MODE_DEFAULT = "random";
 
+    public static final String TLINK_SOURCE_PRODUCER_FILE_PATH = "tlink.source.producer.file.path";
+
     public static final String TLINK_SOURCE_PRODUCER_TOTAL = "tlink.source.producer.total";
     public static final long TLINK_SOURCE_PRODUCER_TOTAL_DEFAULT = 20L;
 
