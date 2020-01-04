@@ -69,25 +69,34 @@ tlink.sink.table.type=Append
 
 ## 参数说明
 
-| 参数                                     | 默认值               | 含义             |
-| ---------------------------------------- | -------------------- | ---------------- |
-| tlink.source.table.name                  | 非必填，默认值Orders | 数据源注册的表名 |
-| tlink.source.table.fieldNames            |                      |                  |
-| tlink.source.table.fieldTypes            |                      |                  |
-| tlink.source.eventTime.index             |                      |                  |
-| tlink.source.watermark.maxOutOfOrderness |                      |                  |
-| tlink.source.producer.mode               |                      |                  |
-| tlink.source.producer.total              |                      |                  |
-|                                          |                      |                  |
-|                                          |                      |                  |
-|                                          |                      |                  |
-|                                          |                      |                  |
-|                                          |                      |                  |
-|                                          |                      |                  |
-|                                          |                      |                  |
-|                                          |                      |                  |
-|                                          |                      |                  |
-|                                          |                      |                  |
-|                                          |                      |                  |
-|                                          |                      |                  |
-
+| 参数                                                  | 默认值                                  | 含义                                                         |
+| ----------------------------------------------------- | --------------------------------------- | ------------------------------------------------------------ |
+| tlink.source.table.name                               | 非必填，默认值Orders                    | 数据源注册的表名                                             |
+| tlink.source.table.fieldNames                         | 非必填，默认值user, product, amount     | 数据源字段名                                                 |
+| tlink.source.table.fieldTypes                         | 非必填，默认值LONG, STRING, INT         | 数据源字段类型                                               |
+| tlink.source.eventTime.index                          | 如果使用event time必填                  | event time字段在所有字段中的位置                             |
+| tlink.source.watermark.maxOutOfOrderness              | 如果使用event time必填，默认值10000毫米 | 最大允许延迟时间                                             |
+| tlink.source.producer.mode                            | 非必填，默认值random                    | 产生数据的方式，可选值random或者file                         |
+| tlink.source.producer.file.path                       | 如果上面参数配置file，必填              | 数据文件绝对路径                                             |
+| tlink.source.producer.total                           | 非必填，默认20                          | 随机模式下总共产生的数据量                                   |
+| tlink.source.producer.interval.ms                     | 非必填，默认1000毫秒                    | 产生数据的固定时间间隔，如果不配置，采用下面的随机时间间隔   |
+| tlink.source.producer.interval.random.startInclusive  | 非必填，默认值1                         | 默认含义为RandomUtils.nextLong(1,5)*1000                     |
+| tlink.source.producer.interval.random.endExclusive    | 非必填，默认值5                         | 默认含义为RandomUtils.nextLong(1,5)*1000                     |
+| tlink.source.producer.interval.random.factor          | 非必填，默认值1000                      | 默认含义为RandomUtils.nextLong(1,5)*1000                     |
+| tlink.source.producer.string.values                   | 非必填，默认值foo, bar, baz             | 字符串字段候选数据集，随机选择一个作为string类型字段的值     |
+| tlink.source.producer.long.random.startInclusive      | 非必填，默认值1                         | 默认含义为RandomUtils.nextLong(1,10)*1                       |
+| tlink.source.producer.long.random.endExclusive        | 非必填，默认值10                        | 默认含义为RandomUtils.nextLong(1,10)*1                       |
+| tlink.source.producer.long.random.factor              | 非必填，默认值1                         | 默认含义为RandomUtils.nextLong(1,10)*1                       |
+| tlink.source.producer.int.random.startInclusive       | 非必填，默认值1                         | 默认含义为RandomUtils.nextInt(1,10)*1                        |
+| tlink.source.producer.int.random.endExclusive         | 非必填，默认值10                        | 默认含义为RandomUtils.nextInt(1,10)*1                        |
+| tlink.source.producer.int.random.factor               | 非必填，默认值1                         | 默认含义为RandomUtils.nextInt(1,10)*1                        |
+| tlink.source.producer.timestamp.random.startInclusive | 非必填，默认值1                         | 默认通过RandomUtils.nextLong(1,10)*1000产生一个随机数，如果是偶数当前时间戳减去这个随机数作为event time，如果是奇数当前时间戳加上这个随机数作为event time |
+| tlink.source.producer.timestamp.random.endExclusive   | 非必填，默认值10                        | 默认通过RandomUtils.nextLong(1,10)*1000产生一个随机数，如果是偶数当前时间戳减去这个随机数作为event time，如果是奇数当前时间戳加上这个随机数作为event time |
+| tlink.source.producer.timestamp.random.factor         | 非必填，默认值1000毫秒                  | 默认通过RandomUtils.nextLong(1,10)*1000产生一个随机数，如果是偶数当前时间戳减去这个随机数作为event time，如果是奇数当前时间戳加上这个随机数作为event time |
+| tlink.sink.table.name                                 | 非必填，默认值Output                    | 输出表的名字                                                 |
+| tlink.sink.table.fieldNames                           | 必填，无默认值                          | 输出字段                                                     |
+| tlink.sink.table.fieldTypes                           | 必填，无默认值                          | 输出字段类型                                                 |
+| tlink.sink.table.type                                 | 必填，无默认值                          | 输出表的类型，可选值为Append或者Retract                      |
+| tlink.streaming.sql.env.parallelism                   | 非必填，默认值1                         | 并行度                                                       |
+| tlink.streaming.sql.env.timeCharacteristic            | 非必填，默认值PROCESSING                | 设置使用那种时间机制，可选值为EVENT或者PROCESSING            |
+| tlink.streaming.sql.statement                         | 必填，无默认值                          | 要执行的sql语句                                              |
