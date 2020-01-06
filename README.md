@@ -58,7 +58,7 @@ tlink.sink.table.type=Append
 
 目前0.1.0版本支持如下特性
 
-1. 支持基于event time的窗口
+1. 支持基于event time和processing time的窗口
 2. 支持随机产生数据
 3. 支持指定文件的方式产生数据
 
