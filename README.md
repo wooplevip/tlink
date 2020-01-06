@@ -58,18 +58,21 @@ tlink.sink.table.type=Append
 
 如果要使用blink planner请参见tlink-topN.properties配置
 
+如果要使用多流join请参考tlink-join.properties配置
+
 ## 特性
 
-目前0.1.0版本支持如下特性
+目前1.0.0版本支持如下特性
 
 1. 支持基于event time和processing time的窗口
 2. 支持随机产生数据
 3. 支持指定文件的方式产生数据
 4. 支持blink planer
+5. 支持多流join的sql
 
 ## 后续计划
 
-1. 支持多流join的sql
+1. 支持多流其他操作
 
 ## 参数说明
 
