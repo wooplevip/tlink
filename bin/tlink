@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+TLINK_HOME=$(cd `dirname $0`/..; pwd)
+
+echo "TLINK_HOME is ${TLINK_HOME}"
+
+confPath=$1
+
+echo "Conf file is ${confPath}"
+
+if [ "$confPath"x = x ] || [ ! -f ${confPath} ]; then
+  echo "Can not find config file path!"
+  exit 101
+fi
+
+function getClassPath(){
+    JAVA_OPTS="-XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:${TLINK_HOME}/logs/gc.log -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${TLINK_HOME}/logs/"
+
+    for jarFile in `ls ${TLINK_HOME}/lib/*jar`
+    do
+    CLASSPATH=${CLASSPATH}:${jarFile}
+    done
+
+    echo ${CLASSPATH}
+}
+
+CLASSPATH=`getClassPath`
+
+java -Dlogback.configurationFile=${TLINK_HOME}/conf/logback.xml -cp ${CLASSPATH} com.tlink.streaming.sql.Launcher "${confPath}"
+

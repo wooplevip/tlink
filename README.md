@@ -54,6 +54,8 @@ tlink.sink.table.fieldTypes=LONG,SQL_TIMESTAMP,INT
 tlink.sink.table.type=Append
 ```
 
+如果要使用blink planner请参见tlink-topN.properties配置
+
 ## 特性
 
 目前0.1.0版本支持如下特性
@@ -61,11 +63,11 @@ tlink.sink.table.type=Append
 1. 支持基于event time和processing time的窗口
 2. 支持随机产生数据
 3. 支持指定文件的方式产生数据
+4. 支持blink planer
 
 ## 后续计划
 
 1. 支持多流join的sql
-2. 支持blink planer
 
 ## 参数说明
 
@@ -99,4 +101,5 @@ tlink.sink.table.type=Append
 | tlink.sink.table.type                                 | 必填，无默认值                          | 输出表的类型，可选值为Append或者Retract                      |
 | tlink.streaming.sql.env.parallelism                   | 非必填，默认值1                         | 并行度                                                       |
 | tlink.streaming.sql.env.timeCharacteristic            | 非必填，默认值PROCESSING                | 设置使用那种时间机制，可选值为EVENT或者PROCESSING            |
+| tlink.streaming.sql.env.planner                       | 非必填，默认值old                       | 设置planner，可选值为old或者blink                            |
 | tlink.streaming.sql.statement                         | 必填，无默认值                          | 要执行的sql语句                                              |

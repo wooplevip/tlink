@@ -1,7 +1,7 @@
 package com.tlink.streaming.sql;
 
 import com.tlink.conf.TlinkConfigConstants;
-import com.tlink.conf.TlinkConfiguration;
+import com.tlink.streaming.core.TlinkContext;
 import com.tlink.streaming.core.BoundedOutOfOrdernessGenerator;
 import com.tlink.streaming.core.MemoryDataSource;
 import com.tlink.utils.PropertiesUtil;
@@ -11,6 +11,7 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.java.StreamTableEnvironment;
 import org.apache.flink.table.sinks.TableSink;
@@ -23,14 +24,17 @@ public class Launcher {
             System.exit(101);
         }
 
-        TlinkConfiguration tConfig = new TlinkConfiguration(args[0].trim());
+        TlinkContext tConfig = new TlinkContext(args[0].trim());
 
         TypeInformation<?>[] fieldTypes = tConfig.getSourceFieldTypes();
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironment();
         env.setStreamTimeCharacteristic(tConfig.getTimeCharacteristic());
-        StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env);
-        env.setParallelism(PropertiesUtil.getInt(tConfig.getProperties(), TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_PARALLELISM, TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_PARALLELISM_DEFAULT));
+
+        EnvironmentSettings envSettings = tConfig.getEnvironmentSettings();
+
+        StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env, envSettings);
+        env.setParallelism(PropertiesUtil.getInt(tConfig.getConfig(), TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_PARALLELISM, TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_PARALLELISM_DEFAULT));
 
         DataStream<Row> ds = env.addSource(new MemoryDataSource(tConfig)).
                 returns(new RowTypeInfo(fieldTypes, tConfig.getSourceFieldNames(true)));
@@ -39,15 +43,15 @@ public class Launcher {
             ds = ds.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessGenerator(tConfig));
         }
 
-        String sourceTableName = tConfig.getProperties().getProperty(TlinkConfigConstants.TLINK_SOURCE_TABLE_NAME, TlinkConfigConstants.TLINK_SOURCE_TABLE_NAME_DEFAULT);
+        String sourceTableName = tConfig.getConfig().getProperty(TlinkConfigConstants.TLINK_SOURCE_TABLE_NAME, TlinkConfigConstants.TLINK_SOURCE_TABLE_NAME_DEFAULT);
 
         tableEnv.registerDataStream(sourceTableName, ds, StringUtils.join(tConfig.getSourceFieldNames(false), ","));
 
-        String sql = tConfig.getProperties().getProperty(TlinkConfigConstants.TLINK_STREAMING_SQL_STATEMENT);
+        String sql = tConfig.getConfig().getProperty(TlinkConfigConstants.TLINK_STREAMING_SQL_STATEMENT);
 
         Table result = tableEnv.sqlQuery(sql);
 
-        String sinkTableName = tConfig.getProperties().getProperty(TlinkConfigConstants.TLINK_SINK_TABLE_NAME, TlinkConfigConstants.TLINK_SINK_TABLE_NAME_DEFAULT);
+        String sinkTableName = tConfig.getConfig().getProperty(TlinkConfigConstants.TLINK_SINK_TABLE_NAME, TlinkConfigConstants.TLINK_SINK_TABLE_NAME_DEFAULT);
 
         TableSink sink = StreamTableSinkFactory.getStreamTableSink(tConfig);
         tableEnv.registerTableSink(sinkTableName, sink);

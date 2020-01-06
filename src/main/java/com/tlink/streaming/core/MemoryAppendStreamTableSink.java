@@ -1,7 +1,6 @@
 package com.tlink.streaming.core;
 
 import com.tlink.conf.TlinkConfigConstants;
-import com.tlink.conf.TlinkConfiguration;
 import com.tlink.utils.PropertiesUtil;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
@@ -16,11 +15,11 @@ public class MemoryAppendStreamTableSink implements AppendStreamTableSink<Row> {
     private String[] fieldNames;
     private TypeInformation<?>[] fieldTypes;
 
-    private TlinkConfiguration tConfig;
+    private TlinkContext tConfig;
 
-    public MemoryAppendStreamTableSink(TlinkConfiguration tConfig) {
+    public MemoryAppendStreamTableSink(TlinkContext tConfig) {
         this.tConfig = tConfig;
-        this.fieldNames = PropertiesUtil.getStringArray(this.tConfig.getProperties(), TlinkConfigConstants.TLINK_SINK_TABLE_FIELDNAMES);
+        this.fieldNames = PropertiesUtil.getStringArray(this.tConfig.getConfig(), TlinkConfigConstants.TLINK_SINK_TABLE_FIELDNAMES);
         this.fieldTypes = tConfig.getSinkFieldTypes();
     }
 

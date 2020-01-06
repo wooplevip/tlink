@@ -1,7 +1,6 @@
 package com.tlink.streaming.core;
 
 import com.tlink.conf.TlinkConfigConstants;
-import com.tlink.conf.TlinkConfiguration;
 import com.tlink.utils.PropertiesUtil;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.flink.streaming.api.functions.AssignerWithPeriodicWatermarks;
@@ -14,9 +13,9 @@ public class BoundedOutOfOrdernessGenerator implements AssignerWithPeriodicWater
 
     private long currentMaxTimestamp;
 
-    public BoundedOutOfOrdernessGenerator(TlinkConfiguration tConfig) {
-        maxOutOfOrderness = PropertiesUtil.getLong(tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_WATERMARK_MAXOUTOFORDERNESS, 10000L);
-        eventTimeIndex = PropertiesUtil.getInt(tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_TABLE_EVENTTIME_INDEX, 0);
+    public BoundedOutOfOrdernessGenerator(TlinkContext tConfig) {
+        maxOutOfOrderness = PropertiesUtil.getLong(tConfig.getConfig(), TlinkConfigConstants.TLINK_SOURCE_WATERMARK_MAXOUTOFORDERNESS, 10000L);
+        eventTimeIndex = PropertiesUtil.getInt(tConfig.getConfig(), TlinkConfigConstants.TLINK_SOURCE_TABLE_EVENTTIME_INDEX, 0);
     }
 
     @Override

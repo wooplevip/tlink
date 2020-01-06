@@ -1,19 +1,19 @@
-package com.tlink.conf;
+package com.tlink.streaming.core;
 
 import com.google.common.collect.ImmutableMap;
+import com.tlink.conf.TlinkConfigConstants;
 import com.tlink.utils.PropertiesUtil;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.streaming.api.TimeCharacteristic;
+import org.apache.flink.table.api.EnvironmentSettings;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.Serializable;
 import java.util.*;
 
-public class TlinkConfiguration implements Serializable {
+public class TlinkContext implements Serializable {
     private String configPath;
 
     private Map<String, TypeInformation> supportedFieldTypes;
@@ -22,7 +22,7 @@ public class TlinkConfiguration implements Serializable {
     private Properties config = new Properties();
 
 
-    public TlinkConfiguration(String configPath) {
+    public TlinkContext(String configPath) {
         this.configPath = configPath;
         init();
     }
@@ -40,7 +40,7 @@ public class TlinkConfiguration implements Serializable {
     }
 
 
-    public Properties getProperties() {
+    public Properties getConfig() {
         return config;
     }
 
@@ -101,6 +101,17 @@ public class TlinkConfiguration implements Serializable {
             return StringUtils.substringBeforeLast(StringUtils.join(sourceFieldNames, ","), ",").split(",");
         }else {
             return sourceFieldNames;
+        }
+    }
+
+    public EnvironmentSettings getEnvironmentSettings(){
+        EnvironmentSettings.Builder envSettings = EnvironmentSettings.newInstance().inStreamingMode();
+        if (config.getProperty(TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_PLANNER, TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_PLANNER_DEFAULT)
+        .equalsIgnoreCase(TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_PLANNER_DEFAULT)){
+
+            return envSettings.useOldPlanner().build();
+        }else {
+            return envSettings.useBlinkPlanner().build();
         }
     }
 }
