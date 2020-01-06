@@ -6,7 +6,7 @@
 
 本地执行flink streaming SQL快速进行验证，不依赖任何额外组件，帮助业务人员提高SQL开发效率。
 
-##快速上手
+## 快速上手
 
 tlink.properties内容如下，是运行一个sql需要配置的最小集，默认产生数据的字段为`user,product,amount`
 
