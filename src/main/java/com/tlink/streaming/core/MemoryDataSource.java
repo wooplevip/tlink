@@ -1,5 +1,6 @@
 package com.tlink.streaming.core;
 
+import com.tlink.conf.SourceTable;
 import com.tlink.conf.TlinkConfigConstants;
 import com.tlink.utils.PropertiesUtil;
 import org.apache.commons.io.FileUtils;
@@ -17,35 +18,34 @@ import java.util.List;
 
 public class MemoryDataSource extends RichParallelSourceFunction<Row> {
     private volatile boolean running = true;
-    private String[] fieldNames;
     private TypeInformation<?>[] fieldTypes;
-    private TlinkContext tConfig;
+    private SourceTable sourceTable;
 
-    public MemoryDataSource(TlinkContext tConfig) {
-        this.tConfig = tConfig;
+    public MemoryDataSource(SourceTable sourceTable) {
+        this.sourceTable = sourceTable;
     }
 
     @Override
     public void run(SourceContext<Row> ctx) throws Exception {
-        long numElements = PropertiesUtil.getLong(this.tConfig.getConfig(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_TOTAL, TlinkConfigConstants.TLINK_SOURCE_PRODUCER_TOTAL_DEFAULT);
+        long numElements = PropertiesUtil.getLong(sourceTable.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_TOTAL, TlinkConfigConstants.TLINK_SOURCE_PRODUCER_TOTAL_DEFAULT);
         int count = 0;
-        String mode = tConfig.getConfig().getProperty(TlinkConfigConstants.TLINK_SOURCE_PRODUCER_MODE, TlinkConfigConstants.TLINK_SOURCE_PRODUCER_MODE_DEFAULT);
+        String mode = sourceTable.getProperties().getProperty(TlinkConfigConstants.TLINK_SOURCE_PRODUCER_MODE, TlinkConfigConstants.TLINK_SOURCE_PRODUCER_MODE_DEFAULT);
 
         List<String> lines = new ArrayList<>(0);
-        String path = tConfig.getConfig().getProperty(TlinkConfigConstants.TLINK_SOURCE_PRODUCER_FILE_PATH);
+        String path = sourceTable.getProperties().getProperty(TlinkConfigConstants.TLINK_SOURCE_PRODUCER_FILE_PATH);
         if (StringUtils.equalsIgnoreCase(mode, "file") && StringUtils.isNotEmpty(path)){
             lines = FileUtils.readLines(new File(path), "UTF-8");
             numElements = lines.size();
         }
 
         while (running && count < numElements) {
-            if (StringUtils.isNotEmpty(this.tConfig.getConfig().getProperty(TlinkConfigConstants.TLINK_SOURCE_PRODUCER_INTERVAL_MS))) {
-                Thread.sleep(PropertiesUtil.getLong(this.tConfig.getConfig(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_INTERVAL_MS, 1000L));
+            if (StringUtils.isNotEmpty(sourceTable.getProperties().getProperty(TlinkConfigConstants.TLINK_SOURCE_PRODUCER_INTERVAL_MS))) {
+                Thread.sleep(PropertiesUtil.getLong(sourceTable.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_INTERVAL_MS, 1000L));
             } else {
                 Thread.sleep(RandomUtils.nextLong(
-                        PropertiesUtil.getLong(this.tConfig.getConfig(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_INTERVAL_RANDOM_STARTINCLUSIVE, 1),
-                        PropertiesUtil.getLong(this.tConfig.getConfig(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_INTERVAL_RANDOM_ENDEXCLUSIVE, 5)) *
-                        PropertiesUtil.getLong(this.tConfig.getConfig(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_INTERVAL_RANDOM_FACTOR, 1000L));
+                        PropertiesUtil.getLong(sourceTable.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_INTERVAL_RANDOM_STARTINCLUSIVE, 1),
+                        PropertiesUtil.getLong(sourceTable.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_INTERVAL_RANDOM_ENDEXCLUSIVE, 5)) *
+                        PropertiesUtil.getLong(sourceTable.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_INTERVAL_RANDOM_FACTOR, 1000L));
             }
 
             Row row = new Row(fieldTypes.length);
@@ -71,8 +71,7 @@ public class MemoryDataSource extends RichParallelSourceFunction<Row> {
     public void open(Configuration parameters) throws Exception {
         super.open(parameters);
 
-        this.fieldNames = PropertiesUtil.getStringArray(this.tConfig.getConfig(), TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDNAMES, TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDNAMES_DEFAULT);
-        this.fieldTypes = this.tConfig.getSourceFieldTypes();
+        this.fieldTypes = sourceTable.getFieldTypes();
     }
 
     private void produceRowFromFile(Row row, String line) throws Exception {
@@ -96,15 +95,15 @@ public class MemoryDataSource extends RichParallelSourceFunction<Row> {
     }
 
     private void produceRandomRow(Row row) throws Exception {
-        int eventTimeIndex = PropertiesUtil.getInt(tConfig.getConfig(), TlinkConfigConstants.TLINK_SOURCE_TABLE_EVENTTIME_INDEX, -1);
+        int eventTimeIndex = PropertiesUtil.getInt(sourceTable.getProperties(), TlinkConfigConstants.TLINK_SOURCE_TABLE_EVENTTIME_INDEX, -1);
 
         for (int i = 0; i < fieldTypes.length; i++) {
             switch (fieldTypes[i].toString()) {
                 case "Long": {
                     if (eventTimeIndex == i) {
-                        long random = RandomUtils.nextLong(PropertiesUtil.getLong(this.tConfig.getConfig(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_TIMESTAMP_RANDOM_STARTINCLUSIVE, 1),
-                                PropertiesUtil.getLong(this.tConfig.getConfig(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_TIMESTAMP_RANDOM_ENDEXCLUSIVE, 10)) *
-                                PropertiesUtil.getLong(this.tConfig.getConfig(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_TIMESTAMP_RANDOM_FACTOR, 1000L);
+                        long random = RandomUtils.nextLong(PropertiesUtil.getLong(sourceTable.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_TIMESTAMP_RANDOM_STARTINCLUSIVE, 1),
+                                PropertiesUtil.getLong(sourceTable.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_TIMESTAMP_RANDOM_ENDEXCLUSIVE, 10)) *
+                                PropertiesUtil.getLong(sourceTable.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_TIMESTAMP_RANDOM_FACTOR, 1000L);
                         long rowTime = 0;
 
                         if (random % 2 == 0) {
@@ -114,19 +113,19 @@ public class MemoryDataSource extends RichParallelSourceFunction<Row> {
                         }
                         row.setField(i, rowTime);
                     } else {
-                        row.setField(i, RandomUtils.nextLong(PropertiesUtil.getLong(this.tConfig.getConfig(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_LONG_RANDOM_STARTINCLUSIVE, 1),
-                                PropertiesUtil.getLong(this.tConfig.getConfig(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_LONG_RANDOM_ENDEXCLUSIVE, 10)) *
-                                PropertiesUtil.getLong(this.tConfig.getConfig(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_LONG_RANDOM_FACTOR, 1));
+                        row.setField(i, RandomUtils.nextLong(PropertiesUtil.getLong(sourceTable.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_LONG_RANDOM_STARTINCLUSIVE, 1),
+                                PropertiesUtil.getLong(sourceTable.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_LONG_RANDOM_ENDEXCLUSIVE, 10)) *
+                                PropertiesUtil.getLong(sourceTable.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_LONG_RANDOM_FACTOR, 1));
                     }
                     break;
                 }
                 case "Integer":
-                    row.setField(i, RandomUtils.nextInt(PropertiesUtil.getInt(this.tConfig.getConfig(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_INT_RANDOM_STARTINCLUSIVE, 1),
-                            PropertiesUtil.getInt(this.tConfig.getConfig(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_INT_RANDOM_ENDEXCLUSIVE, 10)) *
-                            PropertiesUtil.getInt(this.tConfig.getConfig(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_INT_RANDOM_FACTOR, 1));
+                    row.setField(i, RandomUtils.nextInt(PropertiesUtil.getInt(sourceTable.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_INT_RANDOM_STARTINCLUSIVE, 1),
+                            PropertiesUtil.getInt(sourceTable.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_INT_RANDOM_ENDEXCLUSIVE, 10)) *
+                            PropertiesUtil.getInt(sourceTable.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_INT_RANDOM_FACTOR, 1));
                     break;
                 case "String": {
-                    String[] values = PropertiesUtil.getStringArray(this.tConfig.getConfig(),
+                    String[] values = PropertiesUtil.getStringArray(sourceTable.getProperties(),
                             TlinkConfigConstants.TLINK_SOURCE_PRODUCER_STRING_VALUES,
                             TlinkConfigConstants.TLINK_SOURCE_PRODUCER_STRING_VALUES_DEFAULT);
 
