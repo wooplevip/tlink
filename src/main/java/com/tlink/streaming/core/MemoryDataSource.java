@@ -49,7 +49,7 @@ public class MemoryDataSource extends RichParallelSourceFunction<Row> {
                         PropertiesUtil.getLong(this.tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_PRODUCER_INTERVAL_RANDOM_FACTOR, 1000L));
             }
 
-            Row row = new Row(fieldNames.length);
+            Row row = new Row(fieldTypes.length);
 
             if (StringUtils.equalsIgnoreCase(mode, "file")){
                 produceRowFromFile(row, lines.get(count));
@@ -99,7 +99,7 @@ public class MemoryDataSource extends RichParallelSourceFunction<Row> {
     private void produceRandomRow(Row row) throws Exception {
         int eventTimeIndex = PropertiesUtil.getInt(tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_TABLE_EVENTTIME_INDEX, -1);
 
-        for (int i = 0; i < fieldNames.length; i++) {
+        for (int i = 0; i < fieldTypes.length; i++) {
             switch (fieldTypes[i].toString()) {
                 case "Long": {
                     if (eventTimeIndex == i) {

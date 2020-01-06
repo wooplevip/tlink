@@ -25,7 +25,6 @@ public class Launcher {
 
         TlinkConfiguration tConfig = new TlinkConfiguration(args[0].trim());
 
-        String[] sourceFieldNames = PropertiesUtil.getStringArray(tConfig.getProperties(), TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDNAMES, TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDNAMES_DEFAULT);
         TypeInformation<?>[] fieldTypes = tConfig.getSourceFieldTypes();
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironment();
@@ -34,7 +33,7 @@ public class Launcher {
         env.setParallelism(PropertiesUtil.getInt(tConfig.getProperties(), TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_PARALLELISM, TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_PARALLELISM_DEFAULT));
 
         DataStream<Row> ds = env.addSource(new MemoryDataSource(tConfig)).
-                returns(new RowTypeInfo(fieldTypes, sourceFieldNames));
+                returns(new RowTypeInfo(fieldTypes, tConfig.getSourceFieldNames(true)));
 
         if (tConfig.isEventTimeTimeCharacteristic()){
             ds = ds.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessGenerator(tConfig));
@@ -42,12 +41,11 @@ public class Launcher {
 
         String sourceTableName = tConfig.getProperties().getProperty(TlinkConfigConstants.TLINK_SOURCE_TABLE_NAME, TlinkConfigConstants.TLINK_SOURCE_TABLE_NAME_DEFAULT);
 
-        tableEnv.registerDataStream(sourceTableName, ds, StringUtils.join(sourceFieldNames, ","));
+        tableEnv.registerDataStream(sourceTableName, ds, StringUtils.join(tConfig.getSourceFieldNames(false), ","));
 
         String sql = tConfig.getProperties().getProperty(TlinkConfigConstants.TLINK_STREAMING_SQL_STATEMENT);
 
         Table result = tableEnv.sqlQuery(sql);
-
 
         String sinkTableName = tConfig.getProperties().getProperty(TlinkConfigConstants.TLINK_SINK_TABLE_NAME, TlinkConfigConstants.TLINK_SINK_TABLE_NAME_DEFAULT);
 

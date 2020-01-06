@@ -75,8 +75,6 @@ public class TlinkConfiguration implements Serializable {
         return fieldTypes;
     }
 
-
-
     public TimeCharacteristic getTimeCharacteristic(){
         String t = config.getProperty(TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_TIMECHARACTERISTIC);
         if (StringUtils.isEmpty(t)){
@@ -92,6 +90,17 @@ public class TlinkConfiguration implements Serializable {
             return false;
         }else {
             return this.supportedTimeCharacteristics.get(t) != TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_TIMECHARACTERISTIC_DEFAULT;
+        }
+    }
+
+    public String[] getSourceFieldNames(boolean isTrimProctime){
+        String[] sourceFieldNames = PropertiesUtil.getStringArray(config, TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDNAMES, TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDNAMES_DEFAULT);
+
+        String lastFieldName = sourceFieldNames[sourceFieldNames.length-1];
+        if (isTrimProctime && StringUtils.endsWithIgnoreCase(lastFieldName, ".proctime")){
+            return StringUtils.substringBeforeLast(StringUtils.join(sourceFieldNames, ","), ",").split(",");
+        }else {
+            return sourceFieldNames;
         }
     }
 }
