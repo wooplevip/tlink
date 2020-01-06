@@ -17,10 +17,12 @@ tlink.sink.table.fieldTypes=LONG,STRING,INT
 tlink.sink.table.type=Retract
 ```
 
-执行下面命令
+执行`sh build.sh`进行编译，会在build文件夹下面生成tlink目录
+
+进入tlink目录执行下面命令
 
 ```shell
-java -Dlogback.configurationFile=/opt/tlink/conf/logback.xml -cp  tlink-0.1.0-bundle.jar com.tlink.streaming.sql.Launcher /opt/tlink/conf/tlink.properties
+sh bin/tlink /opt/tlink/conf/tlink.properties
 ```
 
 在控制台就可以看到类似如下的输出，会显示发送的数据以及sql运行的结果
