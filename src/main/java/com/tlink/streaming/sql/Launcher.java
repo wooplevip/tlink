@@ -24,36 +24,36 @@ public class Launcher {
             System.exit(101);
         }
 
-        TlinkContext tConfig = new TlinkContext(args[0].trim());
+        TlinkContext tContext = new TlinkContext(args[0].trim());
 
-        TypeInformation<?>[] fieldTypes = tConfig.getSourceFieldTypes();
+        TypeInformation<?>[] fieldTypes = tContext.getSourceFieldTypes();
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironment();
-        env.setStreamTimeCharacteristic(tConfig.getTimeCharacteristic());
+        env.setStreamTimeCharacteristic(tContext.getTimeCharacteristic());
 
-        EnvironmentSettings envSettings = tConfig.getEnvironmentSettings();
+        EnvironmentSettings envSettings = tContext.getEnvironmentSettings();
 
         StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env, envSettings);
-        env.setParallelism(PropertiesUtil.getInt(tConfig.getConfig(), TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_PARALLELISM, TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_PARALLELISM_DEFAULT));
+        env.setParallelism(PropertiesUtil.getInt(tContext.getConfig(), TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_PARALLELISM, TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_PARALLELISM_DEFAULT));
 
-        DataStream<Row> ds = env.addSource(new MemoryDataSource(tConfig)).
-                returns(new RowTypeInfo(fieldTypes, tConfig.getSourceFieldNames(true)));
+        DataStream<Row> ds = env.addSource(new MemoryDataSource(tContext)).
+                returns(new RowTypeInfo(fieldTypes, tContext.getSourceFieldNames(true)));
 
-        if (tConfig.isEventTimeTimeCharacteristic()){
-            ds = ds.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessGenerator(tConfig));
+        if (tContext.isEventTimeTimeCharacteristic()){
+            ds = ds.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessGenerator(tContext));
         }
 
-        String sourceTableName = tConfig.getConfig().getProperty(TlinkConfigConstants.TLINK_SOURCE_TABLE_NAME, TlinkConfigConstants.TLINK_SOURCE_TABLE_NAME_DEFAULT);
+        String sourceTableName = tContext.getConfig().getProperty(TlinkConfigConstants.TLINK_SOURCE_TABLE_NAME, TlinkConfigConstants.TLINK_SOURCE_TABLE_NAME_DEFAULT);
 
-        tableEnv.registerDataStream(sourceTableName, ds, StringUtils.join(tConfig.getSourceFieldNames(false), ","));
+        tableEnv.registerDataStream(sourceTableName, ds, StringUtils.join(tContext.getSourceFieldNames(false), ","));
 
-        String sql = tConfig.getConfig().getProperty(TlinkConfigConstants.TLINK_STREAMING_SQL_STATEMENT);
+        String sql = tContext.getConfig().getProperty(TlinkConfigConstants.TLINK_STREAMING_SQL_STATEMENT);
 
         Table result = tableEnv.sqlQuery(sql);
 
-        String sinkTableName = tConfig.getConfig().getProperty(TlinkConfigConstants.TLINK_SINK_TABLE_NAME, TlinkConfigConstants.TLINK_SINK_TABLE_NAME_DEFAULT);
+        String sinkTableName = tContext.getConfig().getProperty(TlinkConfigConstants.TLINK_SINK_TABLE_NAME, TlinkConfigConstants.TLINK_SINK_TABLE_NAME_DEFAULT);
 
-        TableSink sink = StreamTableSinkFactory.getStreamTableSink(tConfig);
+        TableSink sink = StreamTableSinkFactory.getStreamTableSink(tContext);
         tableEnv.registerTableSink(sinkTableName, sink);
         result.insertInto(sinkTableName);
 

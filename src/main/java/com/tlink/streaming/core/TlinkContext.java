@@ -3,6 +3,11 @@ package com.tlink.streaming.core;
 import com.google.common.collect.ImmutableMap;
 import com.tlink.conf.TlinkConfigConstants;
 import com.tlink.utils.PropertiesUtil;
+import org.apache.calcite.config.Lex;
+import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.SqlNode;
+import org.apache.calcite.sql.SqlSelect;
+import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -19,6 +24,7 @@ public class TlinkContext implements Serializable {
     private Map<String, TypeInformation> supportedFieldTypes;
     private Map<String, TimeCharacteristic> supportedTimeCharacteristics;
 
+    private boolean isJoin = false;
     private Properties config = new Properties();
 
 
@@ -34,18 +40,24 @@ public class TlinkContext implements Serializable {
 
             supportedFieldTypes = ImmutableMap.of("LONG", Types.LONG, "STRING", Types.STRING, "INT", Types.INT, "SQL_TIMESTAMP", Types.SQL_TIMESTAMP);
             supportedTimeCharacteristics = ImmutableMap.of("EVENT", TimeCharacteristic.EventTime, "PROCESSING", TimeCharacteristic.ProcessingTime);
+
+            validate();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-
     public Properties getConfig() {
         return config;
     }
 
-    public void validate() {
-
+    private void validate() throws Exception {
+        String sql = config.getProperty(TlinkConfigConstants.TLINK_STREAMING_SQL_STATEMENT);
+        SqlParser.Config sqlConfig = SqlParser.configBuilder()
+                .setCaseSensitive(false).setLex(Lex.MYSQL).build();
+        SqlParser parser = SqlParser.create(sql, sqlConfig);
+        SqlNode sqlNode = parser.parseQuery();
+        parserSql(sqlNode);
     }
 
     public Map<String, TypeInformation> getSupportedFieldTypes() {
@@ -113,5 +125,29 @@ public class TlinkContext implements Serializable {
         }else {
             return envSettings.useBlinkPlanner().build();
         }
+    }
+
+    public boolean isJoinSQL() {
+        return isJoin;
+    }
+
+    private void parserSql(SqlNode sqlNode){
+        SqlKind sqlKind = sqlNode.getKind();
+
+        switch (sqlKind){
+            case SELECT:
+                SqlNode sqlFrom = ((SqlSelect)sqlNode).getFrom();
+                parserSql(sqlFrom);
+                break;
+            case JOIN:
+                isJoin = true;
+                break;
+            default:
+                break;
+        }
+    }
+
+    public void registerTables(){
+
     }
 }
