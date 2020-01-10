@@ -57,7 +57,7 @@ public class TlinkContext implements Serializable {
     }
 
     public TypeInformation<?>[] getSinkFieldTypes() {
-        String[] types = PropertiesUtil.getStringArray(config, TlinkConfigConstants.TLINK_SINK_TABLE_FIELDTYPES);
+        String[] types = PropertiesUtil.getStringArray(config, TlinkConfigConstants.TLINK_SINK_TABLE_FIELDTYPES, true);
         TypeInformation<?>[] fieldTypes = new TypeInformation[types.length];
 
         for (int i = 0; i < fieldTypes.length; i++) {
@@ -99,7 +99,7 @@ public class TlinkContext implements Serializable {
 
     public TypeInformation<?>[] getSourceFieldTypes(String tableName) {
         String key = StringUtils.isEmpty(tableName) ? TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDTYPES : "tlink.source.table." + tableName + ".fieldTypes";
-        String[] types = PropertiesUtil.getStringArray(config, key, TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDTYPES_DEFAULT);
+        String[] types = PropertiesUtil.getStringArray(config, key, TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDTYPES_DEFAULT, true);
         TypeInformation<?>[] fieldTypes = new TypeInformation[types.length];
 
         for (int i = 0; i < fieldTypes.length; i++) {

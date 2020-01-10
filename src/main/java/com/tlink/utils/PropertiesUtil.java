@@ -53,16 +53,24 @@ public class PropertiesUtil {
 	}
 
 	public static String[] getStringArray(Properties config, String key) {
-		String val = config.getProperty(key);
-		if (StringUtils.isEmpty(val)) {
-			return new String[0];
-		} else {
-			return StringUtils.remove(val, " ").split(",");
-		}
+		return getStringArray(config, key, new String[0], false);
 	}
 
 	public static String[] getStringArray(Properties config, String key, String[] defaultValue) {
+		return getStringArray(config, key, defaultValue, false);
+	}
+
+	public static String[] getStringArray(Properties config, String key, boolean upperCase) {
+		return getStringArray(config, key, new String[0], upperCase);
+	}
+
+	public static String[] getStringArray(Properties config, String key, String[] defaultValue, boolean upperCase) {
 		String val = config.getProperty(key);
+
+		if (upperCase){
+			val = StringUtils.upperCase(val);
+		}
+
 		if (StringUtils.isEmpty(val)) {
 			return defaultValue;
 		} else {
