@@ -26,31 +26,23 @@ import java.util.*;
 
 public class TlinkContext implements Serializable {
     private String configPath;
-
     private Map<String, TypeInformation> supportedFieldTypes;
     private Map<String, TimeCharacteristic> supportedTimeCharacteristics;
-
     private boolean isJoin = false;
     private Properties config = new Properties();
 
-
-    public TlinkContext(String configPath) {
+    public TlinkContext(String configPath) throws Exception {
         this.configPath = configPath;
         init();
     }
 
-    private void init(){
-        try {
+    private void init() throws Exception {
+        config.load(new FileInputStream(this.configPath));
 
-            config.load(new FileInputStream(this.configPath));
+        supportedFieldTypes = ImmutableMap.of("LONG", Types.LONG, "STRING", Types.STRING, "INT", Types.INT, "SQL_TIMESTAMP", Types.SQL_TIMESTAMP);
+        supportedTimeCharacteristics = ImmutableMap.of("EVENT", TimeCharacteristic.EventTime, "PROCESSING", TimeCharacteristic.ProcessingTime);
 
-            supportedFieldTypes = ImmutableMap.of("LONG", Types.LONG, "STRING", Types.STRING, "INT", Types.INT, "SQL_TIMESTAMP", Types.SQL_TIMESTAMP);
-            supportedTimeCharacteristics = ImmutableMap.of("EVENT", TimeCharacteristic.EventTime, "PROCESSING", TimeCharacteristic.ProcessingTime);
-
-            validate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        validate();
     }
 
     public Properties getConfig() {
@@ -59,8 +51,9 @@ public class TlinkContext implements Serializable {
 
     private void validate() throws Exception {
         String[] sourceTableNames = this.getConfig().getProperty(TlinkConfigConstants.TLINK_SOURCE_TABLE_NAMES, TlinkConfigConstants.TLINK_SOURCE_TABLE_NAME_DEFAULT).split(",");
-        if (sourceTableNames.length != PropertiesUtil.getInt(getConfig(), TlinkConfigConstants.TLINK_SOURCE_TABLE_MAX, TlinkConfigConstants.TLINK_SOURCE_TABLE_MAX_DEFAULT)){
-            throw new Exception("Not support more than two source tables");
+        int maxTables = PropertiesUtil.getInt(getConfig(), TlinkConfigConstants.TLINK_SOURCE_TABLE_MAX, TlinkConfigConstants.TLINK_SOURCE_TABLE_MAX_DEFAULT);
+        if (sourceTableNames.length > maxTables) {
+            throw new Exception("Not support more than " + maxTables + " source tables");
         }
 
         String sql = config.getProperty(TlinkConfigConstants.TLINK_STREAMING_SQL_STATEMENT);
@@ -75,7 +68,7 @@ public class TlinkContext implements Serializable {
         return supportedFieldTypes;
     }
 
-    public TypeInformation<?>[] getSinkFieldTypes(){
+    public TypeInformation<?>[] getSinkFieldTypes() {
         String[] types = PropertiesUtil.getStringArray(config, TlinkConfigConstants.TLINK_SINK_TABLE_FIELDTYPES);
         TypeInformation<?>[] fieldTypes = new TypeInformation[types.length];
 
@@ -86,37 +79,37 @@ public class TlinkContext implements Serializable {
         return fieldTypes;
     }
 
-    public TimeCharacteristic getTimeCharacteristic(){
+    public TimeCharacteristic getTimeCharacteristic() {
         String t = config.getProperty(TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_TIMECHARACTERISTIC);
-        if (StringUtils.isEmpty(t)){
+        if (StringUtils.isEmpty(t)) {
             return TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_TIMECHARACTERISTIC_DEFAULT;
-        }else {
+        } else {
             return this.supportedTimeCharacteristics.get(t);
         }
     }
 
-    public boolean isEventTimeTimeCharacteristic(){
+    public boolean isEventTimeTimeCharacteristic() {
         String t = config.getProperty(TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_TIMECHARACTERISTIC);
-        if (StringUtils.isEmpty(t)){
+        if (StringUtils.isEmpty(t)) {
             return false;
-        }else {
+        } else {
             return this.supportedTimeCharacteristics.get(t) != TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_TIMECHARACTERISTIC_DEFAULT;
         }
     }
 
-    public String[] getSourceFieldNames(String tableName, boolean isTrimProctime){
+    public String[] getSourceFieldNames(String tableName, boolean isTrimProctime) {
         String key = StringUtils.isEmpty(tableName) ? TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDNAMES : "tlink.source.table." + tableName + ".fieldNames";
         String[] sourceFieldNames = PropertiesUtil.getStringArray(config, key, TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDNAMES_DEFAULT);
 
-        String lastFieldName = sourceFieldNames[sourceFieldNames.length-1];
-        if (isTrimProctime && StringUtils.endsWithIgnoreCase(lastFieldName, ".proctime")){
+        String lastFieldName = sourceFieldNames[sourceFieldNames.length - 1];
+        if (isTrimProctime && StringUtils.endsWithIgnoreCase(lastFieldName, ".proctime")) {
             return StringUtils.substringBeforeLast(StringUtils.join(sourceFieldNames, ","), ",").split(",");
-        }else {
+        } else {
             return sourceFieldNames;
         }
     }
 
-    public TypeInformation<?>[] getSourceFieldTypes(String tableName){
+    public TypeInformation<?>[] getSourceFieldTypes(String tableName) {
         String key = StringUtils.isEmpty(tableName) ? TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDTYPES : "tlink.source.table." + tableName + ".fieldTypes";
         String[] types = PropertiesUtil.getStringArray(config, key, TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDTYPES_DEFAULT);
         TypeInformation<?>[] fieldTypes = new TypeInformation[types.length];
@@ -128,21 +121,21 @@ public class TlinkContext implements Serializable {
         return fieldTypes;
     }
 
-    public TypeInformation<?>[] getSourceFieldTypes(){
+    public TypeInformation<?>[] getSourceFieldTypes() {
         return getSourceFieldTypes("");
     }
 
-    public String[] getSourceFieldNames(boolean isTrimProctime){
+    public String[] getSourceFieldNames(boolean isTrimProctime) {
         return getSourceFieldNames("", isTrimProctime);
     }
 
-    public EnvironmentSettings getEnvironmentSettings(){
+    public EnvironmentSettings getEnvironmentSettings() {
         EnvironmentSettings.Builder envSettings = EnvironmentSettings.newInstance().inStreamingMode();
         if (config.getProperty(TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_PLANNER, TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_PLANNER_DEFAULT)
-        .equalsIgnoreCase(TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_PLANNER_DEFAULT)){
+                .equalsIgnoreCase(TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_PLANNER_DEFAULT)) {
 
             return envSettings.useOldPlanner().build();
-        }else {
+        } else {
             return envSettings.useBlinkPlanner().build();
         }
     }
@@ -151,12 +144,12 @@ public class TlinkContext implements Serializable {
         return isJoin;
     }
 
-    private void parserSql(SqlNode sqlNode){
+    private void parserSql(SqlNode sqlNode) {
         SqlKind sqlKind = sqlNode.getKind();
 
-        switch (sqlKind){
+        switch (sqlKind) {
             case SELECT:
-                SqlNode sqlFrom = ((SqlSelect)sqlNode).getFrom();
+                SqlNode sqlFrom = ((SqlSelect) sqlNode).getFrom();
                 parserSql(sqlFrom);
                 break;
             case JOIN:
@@ -167,11 +160,11 @@ public class TlinkContext implements Serializable {
         }
     }
 
-    public void registerTables(StreamExecutionEnvironment env, StreamTableEnvironment tableEnv){
+    public void registerTables(StreamExecutionEnvironment env, StreamTableEnvironment tableEnv) {
         String sourceTableName = this.getConfig().getProperty(TlinkConfigConstants.TLINK_SOURCE_TABLE_NAMES, TlinkConfigConstants.TLINK_SOURCE_TABLE_NAME_DEFAULT);
-        if (!this.isJoinSQL()){
+        if (!this.isJoinSQL()) {
             registerTable(sourceTableName, env, tableEnv);
-        }else {
+        } else {
             String[] sourceTableNames = sourceTableName.split(",");
             for (String name : sourceTableNames) {
                 registerTable(name.trim(), env, tableEnv);
@@ -180,23 +173,23 @@ public class TlinkContext implements Serializable {
 
     }
 
-    private void registerTable(String sourceTableName, StreamExecutionEnvironment env, StreamTableEnvironment tableEnv){
+    private void registerTable(String sourceTableName, StreamExecutionEnvironment env, StreamTableEnvironment tableEnv) {
         SourceTable sourceTable = buildTable(sourceTableName);
 
         DataStream<Row> ds = env.addSource(new MemoryDataSource(sourceTable)).
                 returns(new RowTypeInfo(sourceTable.getFieldTypes(), sourceTable.getFieldNames()));
 
-        if (this.isEventTimeTimeCharacteristic()){
+        if (this.isEventTimeTimeCharacteristic()) {
             ds = ds.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessGenerator(this));
         }
 
-        tableEnv.registerDataStream(sourceTableName, ds, StringUtils.join(this.getSourceFieldNames(sourceTable.getName(),false), ","));
+        tableEnv.registerDataStream(sourceTableName, ds, StringUtils.join(this.getSourceFieldNames(sourceTable.getName(), false), ","));
     }
 
-    private SourceTable buildTable(String name){
+    private SourceTable buildTable(String name) {
         SourceTable sourceTable = new SourceTable();
         sourceTable.setName(name);
-        sourceTable.setFieldNames(this.getSourceFieldNames(name,true));
+        sourceTable.setFieldNames(this.getSourceFieldNames(name, true));
         sourceTable.setFieldTypes(this.getSourceFieldTypes(name));
 
         sourceTable.setProperties(this.getConfig());
