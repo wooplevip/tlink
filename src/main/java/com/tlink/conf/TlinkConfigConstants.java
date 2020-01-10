@@ -15,7 +15,7 @@ public class TlinkConfigConstants {
     public static final String TLINK_SOURCE_TABLE_EVENTTIME_INDEX = "tlink.source.eventTime.index";
     public static final String TLINK_SOURCE_WATERMARK_MAXOUTOFORDERNESS = "tlink.source.watermark.maxOutOfOrderness";
 
-    public static final String TLINK_SOURCE_PRODUCER_MODE = "tlink.source.producer.mode";//file or random
+    public static final String TLINK_SOURCE_PRODUCER_MODE = "tlink.source.producer.mode";//file or random or DDL
     public static final String TLINK_SOURCE_PRODUCER_MODE_DEFAULT = "random";
 
     public static final String TLINK_SOURCE_PRODUCER_FILE_PATH = "tlink.source.producer.file.path";
@@ -43,6 +43,7 @@ public class TlinkConfigConstants {
     public static final String TLINK_SOURCE_PRODUCER_TIMESTAMP_RANDOM_ENDEXCLUSIVE = "tlink.source.producer.timestamp.random.endExclusive";
     public static final String TLINK_SOURCE_PRODUCER_TIMESTAMP_RANDOM_FACTOR = "tlink.source.producer.timestamp.random.factor";
 
+    public static final String TLINK_SOURCE_PRODUCER_SQL_STATEMENT = "tlink.source.producer.sql.statement";
 
     public static final String TLINK_SINK_TABLE_NAME = "tlink.sink.table.name";
     public static final String TLINK_SINK_TABLE_NAME_DEFAULT = "Output";

@@ -136,10 +136,14 @@ public class TlinkContext implements Serializable {
     }
 
     public void registerTables(StreamExecutionEnvironment env, StreamTableEnvironment tableEnv) {
-        String sourceTableName = this.getConfig().getProperty(TlinkConfigConstants.TLINK_SOURCE_TABLE_NAMES, TlinkConfigConstants.TLINK_SOURCE_TABLE_NAME_DEFAULT);
-        String[] sourceTableNames = sourceTableName.split(",");
-        for (String name : sourceTableNames) {
-            registerTable(name.trim(), env, tableEnv);
+        if (this.getConfig().getProperty(TlinkConfigConstants.TLINK_SOURCE_PRODUCER_MODE, TlinkConfigConstants.TLINK_SOURCE_PRODUCER_MODE_DEFAULT).equalsIgnoreCase("DDL")){
+            tableEnv.sqlUpdate(this.getConfig().getProperty(TlinkConfigConstants.TLINK_SOURCE_PRODUCER_SQL_STATEMENT));
+        }else {
+            String sourceTableName = this.getConfig().getProperty(TlinkConfigConstants.TLINK_SOURCE_TABLE_NAMES, TlinkConfigConstants.TLINK_SOURCE_TABLE_NAME_DEFAULT);
+            String[] sourceTableNames = sourceTableName.split(",");
+            for (String name : sourceTableNames) {
+                registerTable(name.trim(), env, tableEnv);
+            }
         }
     }
 
