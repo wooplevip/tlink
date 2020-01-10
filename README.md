@@ -68,11 +68,7 @@ tlink.sink.table.type=Append
 2. 支持随机产生数据
 3. 支持指定文件的方式产生数据
 4. 支持blink planer
-5. 支持多流join的sql
-
-## 后续计划
-
-1. 支持多流其他操作
+5. 支持2个流join、UnionAll等sql
 
 ## 参数说明
 
