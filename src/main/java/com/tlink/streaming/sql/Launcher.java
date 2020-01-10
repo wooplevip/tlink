@@ -12,12 +12,12 @@ import org.apache.flink.table.sinks.TableSink;
 
 public class Launcher {
     public static void main(String[] args) {
-        if (args.length == 10) {
+        if (args.length == 0) {
             System.err.println("Can not find config file path!");
             System.exit(101);
         }
         try {
-            TlinkContext tContext = new TlinkContext("/Users/peng/SandBox/Dev/MyBranch/tlink/conf/tlink-pw.properties");//args[0].trim()
+            TlinkContext tContext = new TlinkContext(args[0].trim());
 
             StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironment();
             env.setStreamTimeCharacteristic(tContext.getTimeCharacteristic());
