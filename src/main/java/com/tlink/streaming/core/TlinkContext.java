@@ -4,11 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.tlink.conf.SourceTable;
 import com.tlink.conf.TlinkConfigConstants;
 import com.tlink.utils.PropertiesUtil;
-import org.apache.calcite.config.Lex;
-import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.sql.SqlNode;
-import org.apache.calcite.sql.SqlSelect;
-import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -55,13 +50,6 @@ public class TlinkContext implements Serializable {
         if (sourceTableNames.length > maxTables) {
             throw new Exception("Not support more than " + maxTables + " source tables");
         }
-
-        String sql = config.getProperty(TlinkConfigConstants.TLINK_STREAMING_SQL_STATEMENT);
-        SqlParser.Config sqlConfig = SqlParser.configBuilder()
-                .setCaseSensitive(false).setLex(Lex.MYSQL).build();
-        SqlParser parser = SqlParser.create(sql, sqlConfig);
-        SqlNode sqlNode = parser.parseQuery();
-        parserSql(sqlNode);
     }
 
     public Map<String, TypeInformation> getSupportedFieldTypes() {
@@ -144,33 +132,12 @@ public class TlinkContext implements Serializable {
         return isJoin;
     }
 
-    private void parserSql(SqlNode sqlNode) {
-        SqlKind sqlKind = sqlNode.getKind();
-
-        switch (sqlKind) {
-            case SELECT:
-                SqlNode sqlFrom = ((SqlSelect) sqlNode).getFrom();
-                parserSql(sqlFrom);
-                break;
-            case JOIN:
-                isJoin = true;
-                break;
-            default:
-                break;
-        }
-    }
-
     public void registerTables(StreamExecutionEnvironment env, StreamTableEnvironment tableEnv) {
         String sourceTableName = this.getConfig().getProperty(TlinkConfigConstants.TLINK_SOURCE_TABLE_NAMES, TlinkConfigConstants.TLINK_SOURCE_TABLE_NAME_DEFAULT);
-        if (!this.isJoinSQL()) {
-            registerTable(sourceTableName, env, tableEnv);
-        } else {
-            String[] sourceTableNames = sourceTableName.split(",");
-            for (String name : sourceTableNames) {
-                registerTable(name.trim(), env, tableEnv);
-            }
+        String[] sourceTableNames = sourceTableName.split(",");
+        for (String name : sourceTableNames) {
+            registerTable(name.trim(), env, tableEnv);
         }
-
     }
 
     private void registerTable(String sourceTableName, StreamExecutionEnvironment env, StreamTableEnvironment tableEnv) {

@@ -62,7 +62,7 @@ public class MemoryRetractStreamTableSink implements RetractStreamTableSink<Row>
 
         @Override
         public void invoke(Tuple2<Boolean, Row> value, Context context) throws Exception {
-            System.out.println("Result:" + value);
+            System.out.println("Result: " + value);
         }
     }
 }

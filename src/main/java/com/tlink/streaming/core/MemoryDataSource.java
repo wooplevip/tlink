@@ -57,7 +57,7 @@ public class MemoryDataSource extends RichParallelSourceFunction<Row> {
             }
 
             ctx.collect(row);
-            System.out.println("sand data:" + row);
+            System.out.println("Sand data: " + row);
             count++;
         }
     }
