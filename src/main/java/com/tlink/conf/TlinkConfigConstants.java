@@ -58,6 +58,7 @@ public class TlinkConfigConstants {
     public static final TimeCharacteristic TLINK_STREAMING_SQL_ENV_TIMECHARACTERISTIC_DEFAULT = TimeCharacteristic.ProcessingTime;
     public static final String TLINK_STREAMING_SQL_ENV_PLANNER = "tlink.streaming.sql.env.planner";
     public static final String TLINK_STREAMING_SQL_ENV_PLANNER_DEFAULT = "old"; //old or blink
+    public static final String TLINK_STREAMING_SQL_ENV_EXPLAIN_ENABLED = "tlink.streaming.sql.env.explain.enabled";
 
     public static final String TLINK_STREAMING_SQL_STATEMENT = "tlink.streaming.sql.statement";
 }

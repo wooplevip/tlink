@@ -39,6 +39,11 @@ public class Launcher {
             tableEnv.registerTableSink(sinkTableName, sink);
             result.insertInto(sinkTableName);
 
+            if (PropertiesUtil.getBoolean(tContext.getConfig(), TlinkConfigConstants.TLINK_STREAMING_SQL_ENV_EXPLAIN_ENABLED, false)){
+                String explain = tableEnv.explain(result,true);
+                System.out.println(explain);
+            }
+
             env.execute();
         } catch (Exception e) {
             e.printStackTrace();
