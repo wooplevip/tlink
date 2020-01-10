@@ -61,7 +61,7 @@ public class MemoryAppendStreamTableSink implements AppendStreamTableSink<Row> {
 
         @Override
         public void invoke(Row value, Context context) throws Exception {
-            System.out.println("Result:" + value);
+            System.out.println("Result: " + value);
         }
     }
 }

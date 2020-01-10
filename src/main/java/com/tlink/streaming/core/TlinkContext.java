@@ -23,7 +23,7 @@ public class TlinkContext implements Serializable {
     private String configPath;
     private Map<String, TypeInformation> supportedFieldTypes;
     private Map<String, TimeCharacteristic> supportedTimeCharacteristics;
-    private boolean isJoin = false;
+    private boolean isSingleTable = true;
     private Properties config = new Properties();
 
     public TlinkContext(String configPath) throws Exception {
@@ -49,6 +49,9 @@ public class TlinkContext implements Serializable {
         int maxTables = PropertiesUtil.getInt(getConfig(), TlinkConfigConstants.TLINK_SOURCE_TABLE_MAX, TlinkConfigConstants.TLINK_SOURCE_TABLE_MAX_DEFAULT);
         if (sourceTableNames.length > maxTables) {
             throw new Exception("Not support more than " + maxTables + " source tables");
+        }
+        if (sourceTableNames.length > 1){
+            isSingleTable = false;
         }
     }
 
@@ -86,7 +89,7 @@ public class TlinkContext implements Serializable {
     }
 
     public String[] getSourceFieldNames(String tableName, boolean isTrimProctime) {
-        String key = StringUtils.isEmpty(tableName) ? TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDNAMES : "tlink.source.table." + tableName + ".fieldNames";
+        String key = isSingleTable ? TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDNAMES : "tlink.source.table." + tableName + ".fieldNames";
         String[] sourceFieldNames = PropertiesUtil.getStringArray(config, key, TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDNAMES_DEFAULT);
 
         String lastFieldName = sourceFieldNames[sourceFieldNames.length - 1];
@@ -98,7 +101,7 @@ public class TlinkContext implements Serializable {
     }
 
     public TypeInformation<?>[] getSourceFieldTypes(String tableName) {
-        String key = StringUtils.isEmpty(tableName) ? TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDTYPES : "tlink.source.table." + tableName + ".fieldTypes";
+        String key = isSingleTable ? TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDTYPES : "tlink.source.table." + tableName + ".fieldTypes";
         String[] types = PropertiesUtil.getStringArray(config, key, TlinkConfigConstants.TLINK_SOURCE_TABLE_FIELDTYPES_DEFAULT, true);
         TypeInformation<?>[] fieldTypes = new TypeInformation[types.length];
 
@@ -128,8 +131,8 @@ public class TlinkContext implements Serializable {
         }
     }
 
-    public boolean isJoinSQL() {
-        return isJoin;
+    public boolean isSingleTable() {
+        return isSingleTable;
     }
 
     public void registerTables(StreamExecutionEnvironment env, StreamTableEnvironment tableEnv) {
