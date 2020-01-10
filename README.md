@@ -78,7 +78,7 @@ tlink.sink.table.type=Append
 
 | 参数                                                  | 默认值                                  | 含义                                                         |
 | ----------------------------------------------------- | --------------------------------------- | ------------------------------------------------------------ |
-| tlink.source.table.name                               | 非必填，默认值Orders                    | 数据源注册的表名                                             |
+| tlink.source.table.names                               | 非必填，默认值Orders                    | 数据源注册的表名，最多支持2个表，表名用逗号分割                                             |
 | tlink.source.table.fieldNames                         | 非必填，默认值user, product, amount     | 数据源字段名                                                 |
 | tlink.source.table.fieldTypes                         | 非必填，默认值LONG, STRING, INT         | 数据源字段类型                                               |
 | tlink.source.eventTime.index                          | 如果使用event time必填                  | event time字段在所有字段中的位置                             |

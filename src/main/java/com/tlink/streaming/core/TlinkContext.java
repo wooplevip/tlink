@@ -58,6 +58,11 @@ public class TlinkContext implements Serializable {
     }
 
     private void validate() throws Exception {
+        String[] sourceTableNames = this.getConfig().getProperty(TlinkConfigConstants.TLINK_SOURCE_TABLE_NAMES, TlinkConfigConstants.TLINK_SOURCE_TABLE_NAME_DEFAULT).split(",");
+        if (sourceTableNames.length != PropertiesUtil.getInt(getConfig(), TlinkConfigConstants.TLINK_SOURCE_TABLE_MAX, TlinkConfigConstants.TLINK_SOURCE_TABLE_MAX_DEFAULT)){
+            throw new Exception("Not support more than two source tables");
+        }
+
         String sql = config.getProperty(TlinkConfigConstants.TLINK_STREAMING_SQL_STATEMENT);
         SqlParser.Config sqlConfig = SqlParser.configBuilder()
                 .setCaseSensitive(false).setLex(Lex.MYSQL).build();
@@ -163,13 +168,13 @@ public class TlinkContext implements Serializable {
     }
 
     public void registerTables(StreamExecutionEnvironment env, StreamTableEnvironment tableEnv){
-        String sourceTableName = this.getConfig().getProperty(TlinkConfigConstants.TLINK_SOURCE_TABLE_NAME, TlinkConfigConstants.TLINK_SOURCE_TABLE_NAME_DEFAULT);
+        String sourceTableName = this.getConfig().getProperty(TlinkConfigConstants.TLINK_SOURCE_TABLE_NAMES, TlinkConfigConstants.TLINK_SOURCE_TABLE_NAME_DEFAULT);
         if (!this.isJoinSQL()){
             registerTable(sourceTableName, env, tableEnv);
         }else {
             String[] sourceTableNames = sourceTableName.split(",");
             for (String name : sourceTableNames) {
-                registerTable(name, env, tableEnv);
+                registerTable(name.trim(), env, tableEnv);
             }
         }
 

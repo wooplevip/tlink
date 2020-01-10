@@ -3,7 +3,9 @@ package com.tlink.conf;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 
 public class TlinkConfigConstants {
-    public static final String TLINK_SOURCE_TABLE_NAME = "tlink.source.table.name";
+    public static final String TLINK_SOURCE_TABLE_NAMES = "tlink.source.table.names";
+    public static final String TLINK_SOURCE_TABLE_MAX = "tlink.source.table.max";
+    public static final int TLINK_SOURCE_TABLE_MAX_DEFAULT = 2;
     public static final String TLINK_SOURCE_TABLE_NAME_DEFAULT = "Orders";
     public static final String TLINK_SOURCE_TABLE_FIELDNAMES = "tlink.source.table.fieldNames";
     public static final String[] TLINK_SOURCE_TABLE_FIELDNAMES_DEFAULT = {"user", "product", "amount"};
