@@ -69,17 +69,19 @@ tlink.sink.table.type=Append
 3. 支持指定文件的方式产生数据
 4. 支持blink planer
 5. 支持2个流join、UnionAll等sql
+6. 支持通过ddl的方式创建数据源，目前只支持connector.type为filesystem
 
 ## 参数说明
 
 | 参数                                                  | 默认值                                  | 含义                                                         |
 | ----------------------------------------------------- | --------------------------------------- | ------------------------------------------------------------ |
-| tlink.source.table.names                               | 非必填，默认值Orders                    | 数据源注册的表名，最多支持2个表，表名用逗号分割                                             |
+| tlink.source.table.names                              | 非必填，默认值Orders                    | 数据源注册的表名，最多支持2个表，表名用逗号分割              |
 | tlink.source.table.fieldNames                         | 非必填，默认值user, product, amount     | 数据源字段名                                                 |
 | tlink.source.table.fieldTypes                         | 非必填，默认值LONG, STRING, INT         | 数据源字段类型                                               |
 | tlink.source.eventTime.index                          | 如果使用event time必填                  | event time字段在所有字段中的位置                             |
 | tlink.source.watermark.maxOutOfOrderness              | 如果使用event time必填，默认值10000毫米 | 最大允许延迟时间                                             |
-| tlink.source.producer.mode                            | 非必填，默认值random                    | 产生数据的方式，可选值random或者file                         |
+| tlink.source.producer.mode                            | 非必填，默认值random                    | 产生数据的方式，可选值random或者file或者DDL                  |
+| tlink.source.producer.sql.statement                   | 非必填，默认值random                    | 产生数据的SQL语句                                            |
 | tlink.source.producer.file.path                       | 如果上面参数配置file，必填              | 数据文件绝对路径                                             |
 | tlink.source.producer.total                           | 非必填，默认20                          | 随机模式下总共产生的数据量                                   |
 | tlink.source.producer.interval.ms                     | 非必填，默认1000毫秒                    | 产生数据的固定时间间隔，如果不配置，采用下面的随机时间间隔   |
