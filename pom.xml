@@ -11,7 +11,7 @@
     <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <flink.version>1.9.1</flink.version>
+    <flink.version>1.9.2</flink.version>
     </properties>
 
     <dependencies>
